@@ -1,0 +1,15 @@
+gradio
+groq
+
+langchain
+langgraph
+langchain-community
+langchain-core
+
+duckduckgo-search
+
+python-dotenv
+
+pydantic
+
+black
