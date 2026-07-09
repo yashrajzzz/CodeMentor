@@ -137,7 +137,7 @@ with gr.Blocks(title="CodeMentor", theme=THEME, css=CUSTOM_CSS) as demo:
         gr.Markdown("""
         # 💻 CodeMentor
         ### 🚀 AI-Powered Code Explanation & Debugging Assistant
-        Explain • Debug • Learn • Improve — powered by AI 🤖
+        Explain • Debug • Learn • Improve - powered by AI 🤖
         """)
 
     with gr.Row():
