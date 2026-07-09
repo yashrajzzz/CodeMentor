@@ -25,6 +25,14 @@ def parse_response(response: str):
 
         sections[title] = content
 
+    time_complexity = sections.get("Time Complexity", "").strip()
+    space_complexity = sections.get("Space Complexity", "").strip()
+
+    complexity = (
+        f"**⏱️ Time Complexity**\n\n{time_complexity}\n\n"
+        f"**📦 Space Complexity**\n\n{space_complexity}"
+    )
+
     return (
         sections.get("Summary", ""),
         sections.get("Explanation", ""),
@@ -32,12 +40,5 @@ def parse_response(response: str):
         sections.get("Potential Bugs", ""),
         sections.get("Improvements", ""),
         sections.get("Documentation", ""),
-        f"""Time Complexity
-
-        {sections.get("Time Complexity","")}
-
-        Space Complexity
-
-        {sections.get("Space Complexity","")}
-        """
+        complexity,
     )
