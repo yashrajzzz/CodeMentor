@@ -155,7 +155,7 @@ with gr.Blocks(title="CodeMentor", theme=THEME, css=CUSTOM_CSS) as demo:
         )
 
     code = gr.Code(
-        label="📄 Paste your code (language is auto-detected — no need to pick it)"
+        label="📄 Paste your code"
     )
 
     gr.Markdown("### 📌 Try these examples")
