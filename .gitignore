@@ -1,11 +1,24 @@
-venv/
-
+# Environment / secrets
 .env
+*.env
 
+# Python
 __pycache__/
-*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
 
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Gradio
+flagged/
+gradio_cached_examples/
+
+# OS / editor
+.DS_Store
 .vscode/
 .idea/
-
-.DS_Store

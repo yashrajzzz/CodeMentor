@@ -5,61 +5,106 @@ from utils.response_parser import parse_response
 from utils.validator import validate_input
 from services.language_detector import detect_language
 from services.followup_service import ask
-from services import session
 
-def analyze(code, level, mode, language, progress=gr.Progress()):
+
+CUSTOM_CSS = """
+.gradio-container {
+    max-width: 1200px !important;
+    margin: auto !important;
+}
+#header-block {
+    text-align: center;
+    padding: 12px 0 4px 0;
+}
+#header-block h1 {
+    font-size: 2.1rem;
+    margin-bottom: 0.2rem;
+}
+#detected-lang {
+    text-align: center;
+    font-weight: 600;
+}
+.result-panel {
+    border-radius: 14px !important;
+    border: 1px solid var(--border-color-primary) !important;
+    padding: 14px !important;
+    background: var(--background-fill-secondary) !important;
+}
+#analyze-btn, #ask-btn {
+    font-size: 1.05rem !important;
+    border-radius: 10px !important;
+}
+footer {visibility: hidden}
+"""
+
+THEME = gr.themes.Soft(
+    primary_hue="violet",
+    secondary_hue="blue",
+    neutral_hue="slate",
+    font=[gr.themes.GoogleFont("Inter"), "ui-sans-serif", "system-ui"],
+).set(
+    button_large_radius="10px",
+    block_radius="14px",
+)
+
+
+def analyze(code, level, mode, session_state, progress=gr.Progress()):
 
     progress(0.2, desc="Validating input...")
 
     if not validate_input(code):
+        msg = "⚠️ Please paste some code first."
         return (
-            "Please paste some code.",
-            "Please paste some code.",
-            "Please paste some code.",
-            "Please paste some code.",
-            "Please paste some code.",
-            "Please paste some code."
+            msg, msg, msg, msg, msg, msg, msg,
+            "—",
+            session_state,
         )
 
-    progress(0.5, desc="Detecting language...")
+    progress(0.4, desc="Detecting language...")
 
-    if language == "Auto Detect":
-        language = detect_language(code)
+    language = detect_language(code)
 
     if language == "Unknown":
+        msg = "🤔 Couldn't confidently detect the programming language for this snippet."
         return (
-            "Could not detect the programming language.\nPlease select it manually.",
-            "",
-            "",
-            "",
-            "",
-            "",
+            msg, "", "", "", "", "", "",
+            "Unknown",
+            session_state,
         )
 
     progress(0.7, desc="Analyzing code...")
 
-    response = explain(code, level, mode, language)
+    response, session_state = explain(code, level, mode, language, session_state)
 
     progress(1.0, desc="Done!")
 
     summary, explanation, analogy, bugs, improvements, docs, complexity = parse_response(response)
 
     return (
-    summary,
-    explanation,
-    analogy,
-    bugs,
-    improvements,
-    docs,
-    complexity,
-)
+        summary,
+        explanation,
+        analogy,
+        bugs,
+        improvements,
+        docs,
+        complexity,
+        f"🔍 Detected language: **{language}**",
+        session_state,
+    )
+
+
+def ask_followup(question, session_state):
+    return ask(question, session_state)
+
 
 def clear_chat():
 
-    session.last_code = ""
-    session.last_level = ""
-    session.last_mode = ""
-    session.last_language = ""
+    empty_session = {
+        "last_code": "",
+        "last_level": "",
+        "last_mode": "",
+        "last_language": "",
+    }
 
     return (
         "",
@@ -69,43 +114,48 @@ def clear_chat():
         "",
         "",
         "",
-        ""
+        "—",
+        "",
+        "",
+        empty_session,
     )
 
-with gr.Blocks(title="CodeMentor") as demo:
 
-    gr.Markdown("""
-    # 💻 CodeMentor
+with gr.Blocks(title="CodeMentor", theme=THEME, css=CUSTOM_CSS) as demo:
 
-    ### 🚀 AI-Powered Code Explanation & Debugging Assistant
+    # per-user session state (isolated across concurrent Gradio users)
+    session_state = gr.State({
+        "last_code": "",
+        "last_level": "",
+        "last_mode": "",
+        "last_language": "",
+    })
 
-    Explain • Debug • Learn • Improve
-    """)
+    with gr.Column(elem_id="header-block"):
+        gr.Markdown("""
+        # 💻 CodeMentor
+        ### 🚀 AI-Powered Code Explanation & Debugging Assistant
+        Explain • Debug • Learn • Improve — powered by AI 🤖
+        """)
 
     with gr.Row():
 
         mode = gr.Radio(
             ["Explain", "Debug"],
             value="Explain",
-            label="Mode"
-        )
-
-        language = gr.Dropdown(
-            ["Auto Detect", "C++", "Python", "Java", "JavaScript"],
-            value="Auto Detect",
-            label="Language"
+            label="🎯 Mode"
         )
 
         level = gr.Radio(
             ["Beginner", "Intermediate", "Expert"],
             value="Beginner",
-            label="Explanation Level"
+            label="🎓 Explanation Level"
         )
 
     code = gr.Code(
-        label="Paste your code"
+        label="📄 Paste your code (language is auto-detected — no need to pick it)"
     )
-    
+
     gr.Markdown("### 📌 Try these examples")
 
     gr.Examples(
@@ -139,61 +189,40 @@ with gr.Blocks(title="CodeMentor") as demo:
         inputs=code
     )
 
-    
+    btn = gr.Button("🚀 Analyze Code", variant="primary", elem_id="analyze-btn")
 
-    btn = gr.Button("🚀 Analyze", variant="primary")
+    detected_language = gr.Markdown("—", elem_id="detected-lang")
 
     with gr.Row():
 
         with gr.Column():
 
             with gr.Accordion("📝 Summary", open=True):
-                summary = gr.Textbox(
-                    lines=6,
-                    interactive=False
-                )
+                summary = gr.Markdown(elem_classes="result-panel")
 
             with gr.Accordion("🐞 Potential Bugs", open=False):
-                bugs = gr.Textbox(
-                    lines=7,
-                    interactive=False
-                )
+                bugs = gr.Markdown(elem_classes="result-panel")
 
             with gr.Accordion("📚 Documentation", open=False):
-                docs = gr.Textbox(
-                    lines=8,
-                    interactive=False
-                )
+                docs = gr.Markdown(elem_classes="result-panel")
 
         with gr.Column():
 
             with gr.Accordion("📖 Explanation", open=True):
-                breakdown = gr.Textbox(
-                    lines=12,
-                    interactive=False
-                )
+                breakdown = gr.Markdown(elem_classes="result-panel")
 
             with gr.Accordion("💡 Improvements", open=False):
-                improvements = gr.Textbox(
-                    lines=7,
-                    interactive=False
-                )
+                improvements = gr.Markdown(elem_classes="result-panel")
 
             with gr.Accordion("📊 Complexity", open=False):
-                complexity = gr.Textbox(
-                    lines=8,
-                    interactive=False
-                )
+                complexity = gr.Markdown(elem_classes="result-panel")
 
     with gr.Accordion("🌍 Real World Analogy", open=False):
-        analogy = gr.Textbox(
-            lines=6,
-            interactive=False
-        )
+        analogy = gr.Markdown(elem_classes="result-panel")
 
     btn.click(
         analyze,
-        [code, level, mode, language],
+        [code, level, mode, session_state],
         [
             summary,
             breakdown,
@@ -201,32 +230,30 @@ with gr.Blocks(title="CodeMentor") as demo:
             bugs,
             improvements,
             docs,
-            complexity
+            complexity,
+            detected_language,
+            session_state,
         ]
     )
 
-    gr.Markdown("## 💬 Follow-up Questions")
+    gr.Markdown("---\n## 💬 Follow-up Questions")
 
     followup = gr.Textbox(
         label="Ask anything about the previously analyzed code",
         placeholder="Example: Why is line 5 needed?"
     )
 
-    followup_btn = gr.Button("Ask")
+    followup_btn = gr.Button("🙋 Ask", elem_id="ask-btn")
 
-    followup_answer = gr.Textbox(
-        label="AI Response",
-        lines=8,
-        interactive=False
-    )
+    followup_answer = gr.Markdown(elem_classes="result-panel")
 
     followup_btn.click(
-        ask,
-        inputs=followup,
+        ask_followup,
+        inputs=[followup, session_state],
         outputs=followup_answer
     )
 
-    clear_btn = gr.Button("🗑 Clear Chat")
+    clear_btn = gr.Button("🗑️ Clear Chat")
 
     clear_btn.click(
         clear_chat,
@@ -238,22 +265,18 @@ with gr.Blocks(title="CodeMentor") as demo:
             improvements,
             docs,
             complexity,
+            detected_language,
             followup,
-            followup_answer
+            followup_answer,
+            session_state,
         ]
     )
 
     gr.Markdown(
     """
     ---
-
     Built with ❤️ 
     """
     )
 
-import os
-
-demo.launch(
-    server_name="0.0.0.0",
-    server_port=int(os.environ.get("PORT", 7860))
-)
+demo.launch()

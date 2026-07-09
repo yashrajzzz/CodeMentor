@@ -1,3 +1,14 @@
+---
+title: CodeMentor
+emoji: 💻
+colorFrom: purple
+colorTo: blue
+sdk: gradio
+sdk_version: 5.38.0
+app_file: app.py
+pinned: false
+---
+
 # 💻 CodeMentor
 
 > AI-Powered Code Explanation & Debugging Assistant
@@ -13,9 +24,8 @@ CodeMentor is an AI-powered programming mentor that helps developers understand,
 - Suggest code improvements
 - Search official documentation
 - Follow-up questions without repasting code
-- Download analysis report
-- Multi-language support
 - Auto language detection
+- Multi-language support
 
 ---
 
@@ -26,7 +36,25 @@ CodeMentor is an AI-powered programming mentor that helps developers understand,
 - LangChain
 - Groq API
 - DuckDuckGo Search
-- Llama 3
+- Llama 3 / GPT-OSS (via Groq)
+
+---
+
+## ⚙️ Setup (local)
+
+```bash
+git clone <your-repo-url>
+cd CodeMentor
+
+pip install -r requirements.txt
+
+# create a .env file with:
+# GROQ_API_KEY=your_key_here
+
+python app.py
+```
+
+On Hugging Face Spaces, set `GROQ_API_KEY` under **Settings → Repository secrets** instead of using a `.env` file.
 
 ---
 
@@ -44,26 +72,6 @@ app.py
 requirements.txt
 README.md
 ```
-
----
-
-## 🚀 Installation
-
-```bash
-git clone https://github.com/yashrajzzz/CodeMentor.git
-
-cd CodeMentor
-
-pip install -r requirements.txt
-
-python app.py
-```
-
----
-
-## 📸 Screenshots
-
-Coming Soon
 
 ---
 

@@ -1,14 +1,17 @@
 from agents.agent import agent
-from services.language_detector import detect_language
 
-from services import session
 
-def explain(code, level, mode, language):
+def explain(code, level, mode, language, session_state):
+    """
+    session_state: a per-user dict (backed by gr.State in app.py) holding
+    the last analyzed code/level/mode/language, so concurrent Gradio users
+    don't share or overwrite each other's context.
+    """
 
-    session.last_code = code
-    session.last_level = level
-    session.last_mode = mode
-    session.last_language = language
+    session_state["last_code"] = code
+    session_state["last_level"] = level
+    session_state["last_mode"] = mode
+    session_state["last_language"] = language
 
     prompt = f"""
     User Level: {level}
@@ -37,6 +40,6 @@ def explain(code, level, mode, language):
             response["messages"][-1].content
         )
 
-        return response["messages"][-1].content
+        return response["messages"][-1].content, session_state
     except Exception as e:
-        return f"Error: {str(e)}"
+        return f"Error: {str(e)}", session_state
