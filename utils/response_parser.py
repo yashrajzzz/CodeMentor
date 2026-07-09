@@ -1,5 +1,34 @@
 import re
 
+
+def _normalize_markdown(text: str) -> str:
+    """
+    The model sometimes indents plain bullet text with 4+ leading spaces,
+    which Markdown interprets as a code block. This strips accidental
+    leading indentation line-by-line, while leaving the *content* of real
+    ``` fenced code blocks untouched.
+    """
+
+    lines = text.split("\n")
+    normalized = []
+    in_fence = False
+
+    for line in lines:
+        stripped = line.strip()
+
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            normalized.append(stripped)
+            continue
+
+        if in_fence:
+            normalized.append(line)
+        else:
+            normalized.append(stripped)
+
+    return "\n".join(normalized).strip()
+
+
 def parse_response(response: str):
 
     sections = {}
@@ -21,12 +50,12 @@ def parse_response(response: str):
         content = ""
 
         if len(lines) > 1:
-            content = lines[1].strip()
+            content = _normalize_markdown(lines[1])
 
         sections[title] = content
 
-    time_complexity = sections.get("Time Complexity", "").strip()
-    space_complexity = sections.get("Space Complexity", "").strip()
+    time_complexity = sections.get("Time Complexity", "")
+    space_complexity = sections.get("Space Complexity", "")
 
     complexity = (
         f"**⏱️ Time Complexity**\n\n{time_complexity}\n\n"
