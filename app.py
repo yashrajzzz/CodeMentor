@@ -1,3 +1,5 @@
+import os
+
 import gradio as gr
 
 from services.explanation_service import explain
@@ -279,4 +281,8 @@ with gr.Blocks(title="CodeMentor", theme=THEME, css=CUSTOM_CSS) as demo:
     """
     )
 
-demo.launch()
+if __name__ == "__main__":
+    demo.launch(
+        server_name="0.0.0.0",
+        server_port=int(os.environ.get("PORT", 7860)),
+    )

@@ -1,14 +1,3 @@
----
-title: CodeMentor
-emoji: 💻
-colorFrom: purple
-colorTo: blue
-sdk: gradio
-sdk_version: 5.38.0
-app_file: app.py
-pinned: false
----
-
 # 💻 CodeMentor
 
 > AI-Powered Code Explanation & Debugging Assistant
@@ -54,7 +43,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-On Hugging Face Spaces, set `GROQ_API_KEY` under **Settings → Repository secrets** instead of using a `.env` file.
+On Render, set `GROQ_API_KEY` under **Environment → Environment Variables** in your Web Service settings instead of using a `.env` file.
 
 ---
 
