@@ -4,7 +4,7 @@
 
 🔗 **Live demo:** [codementor-p73k.onrender.com](https://codementor-p73k.onrender.com)
 
-*(hosted on Render's free tier — the app spins down after inactivity, so the first request after a while may take ~30-50s to wake up)*
+*(hosted on Render's free tier - the app spins down after inactivity, so the first request after a while may take ~30-50s to wake up)*
 
 CodeMentor is an AI-powered programming mentor that helps developers understand, debug, and improve code using Large Language Models (LLMs).
 
